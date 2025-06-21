@@ -19,7 +19,7 @@
           <div class="col-5">
             <q-select
               v-model="from"
-              :options="currencyOptions"
+              :options="[{ label: 'Seleccione moneda', value: '' }, ...currencyOptions]"
               label="Desde"
               dense
               outlined
@@ -27,6 +27,8 @@
               map-options
               :loading="loading"
               required
+              :error="errorFrom"
+              :error-message="errorFrom ? 'Debe seleccionar ambas monedas a cambiar' : ''"
             />
           </div>
           <div class="col-2 flex flex-center">
@@ -46,7 +48,7 @@
           <div class="col-5">
             <q-select
               v-model="to"
-              :options="currencyOptions"
+              :options="[{ label: 'Seleccione moneda', value: '' }, ...currencyOptions]"
               label="Hacia"
               dense
               outlined
@@ -54,6 +56,8 @@
               map-options
               :loading="loading"
               required
+              :error="errorTo"
+              :error-message="errorTo ? 'Debe seleccionar ambas monedas a cambiar' : ''"
             />
           </div>
         </div>
@@ -90,6 +94,8 @@ const currencyOptions = ref([])
 const result = ref(null)
 const error = ref('')
 const loading = ref(false)
+const errorFrom = ref(false)
+const errorTo = ref(false)
 
 onMounted(async () => {
   loading.value = true
@@ -121,6 +127,17 @@ const swapCurrencies = () => {
 const convertCurrency = async () => {
   error.value = ''
   result.value = null
+  errorFrom.value = !from.value
+  errorTo.value = !to.value
+  // Validaciones
+  if (!amount.value || amount.value <= 0) {
+    error.value = 'Ingrese un monto válido.'
+    return
+  }
+  if (!from.value || !to.value) {
+    error.value = 'Debe seleccionar ambas monedas a cambiar'
+    return
+  }
   if (from.value === to.value) {
     result.value = amount.value
     return
